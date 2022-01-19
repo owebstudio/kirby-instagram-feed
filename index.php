@@ -3,6 +3,8 @@
 use Kirby\Cms\App as Kirby;
 use Kirby\Toolkit\Collection;
 
+@include_once __DIR__ . '/helpers.php';
+
 Kirby::plugin('clicktonext/instagram-feed', [
     'options' => [
         'accessToken' => null,
