@@ -1,15 +1,16 @@
 {
   "name": "clicktonext/instagram-feed",
-  "description": "Click to Next instagram feed on your website for Kirby 3.",
+  "description": "Click to Next Instagram feed on your website for Kirby 3.",
   "version": "1.0.0",
   "type": "kirby-plugin",
-  "license": "MIT",
+  "license": "proprietary",
   "keywords": [
     "clicktonext",
     "kirby",
     "kirby-3",
     "kirby3-plugin",
     "kirby-plugin",
+    "clicktonext-plugin",
     "kirby-instagram",
     "instagram",
     "instagram-feed"
