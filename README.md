@@ -83,3 +83,10 @@ return [
     ]
 ];
 ```
+
+## Resources
+
+Here are a few resources on Instagram access token creation:
+
+- https://elfsight.com/blog/2016/05/how-to-get-instagram-access-token/
+- https://www.youtube.com/watch?v=uj9WpuFIZb8
