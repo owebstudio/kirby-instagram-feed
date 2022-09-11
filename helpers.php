@@ -4,7 +4,7 @@ use Kirby\Http\Remote;
 
 function fetchInstagramFeed(): array
 {
-    $options = option('clicktonext.instagram-feed');
+    $options = option('kirbynext.instagram-feed');
 
     $fields = 'id,caption,media_type,media_url,permalink,thumbnail_url,timestamp,username';
     $url = 'https://graph.instagram.com/me/media?fields=' . $fields . '&limit=' . $options['limit'] . '&access_token=' . $options['accessToken'];
@@ -21,7 +21,7 @@ function fetchInstagramFeed(): array
 
 function refreshInstagramToken(): ?string
 {
-    $options = option('clicktonext.instagram-feed');
+    $options = option('kirbynext.instagram-feed');
 
     $url = 'https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=' . $options['accessToken'];
     $response = Remote::get($url)->json();

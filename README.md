@@ -1,6 +1,6 @@
 # Kirby Instagram Feed
 
-Click to Next instagram feed on your website for Kirby 3.
+Instagram feed on your website for Kirby 3.
 
 ## Instagram API
 
@@ -65,7 +65,7 @@ The default values of the package are:
 | expire | int     | 1440    | Sets how long the feed items are cached as minutes. Default is one day.                                                                   |
 | limit | int  | 20      | Sets how many feed items are fetch from API.                                                                                              |
 
-All the values can be updated in the `config.php` file and prefixed with `clicktonext.instagram-feed.`.
+All the values can be updated in the `config.php` file and prefixed with `kirbynext.instagram-feed.`.
 
 ## Sample options
 
@@ -74,7 +74,7 @@ All the values can be updated in the `config.php` file and prefixed with `clickt
 
 // /site/config/config.php
 return [
-    'clicktonext.instagram-feed' => [
+    'kirbynext.instagram-feed' => [
         'accessToken' => 'INSTAGRAM_ACCESS_TOKEN',
         'cache' => true,
         'debug' => false,

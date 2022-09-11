@@ -1,29 +1,29 @@
 {
-  "name": "clicktonext/instagram-feed",
-  "description": "Click to Next Instagram feed on your website for Kirby 3.",
-  "version": "1.0.0",
+  "name": "kirbynext/instagram-feed",
+  "description": "Instagram feed on your website for Kirby 3.",
+  "version": "1.0.1",
   "type": "kirby-plugin",
-  "license": "proprietary",
+  "license": "MIT",
   "keywords": [
-    "clicktonext",
+    "kirbynext",
     "kirby",
     "kirby-3",
     "kirby3-plugin",
     "kirby-plugin",
-    "clicktonext-plugin",
+    "kirbynext-plugin",
     "kirby-instagram",
     "instagram",
     "instagram-feed"
   ],
-  "homepage": "https://clicktonext.com",
+  "homepage": "https://kirbynext.com",
   "support": {
-    "email": "support@clicktonext.com"
+    "email": "support@kirbynext.com"
   },
   "authors": [
     {
-      "name": "Click to Next",
-      "email": "contact@clicktonext.com",
-      "homepage": "https://clicktonext.com"
+      "name": "Kirby Next",
+      "email": "contact@kirbynext.com",
+      "homepage": "https://kirbynext.com"
     }
   ],
   "require": {
