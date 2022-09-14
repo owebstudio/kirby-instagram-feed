@@ -5,7 +5,7 @@ use Kirby\Toolkit\Collection;
 
 @include_once __DIR__ . '/helpers.php';
 
-Kirby::plugin('kirbynext/instagram-feed', [
+Kirby::plugin('owebstudio/instagram-feed', [
     'options' => [
         'accessToken' => null,
         'cache' => true,
@@ -15,7 +15,7 @@ Kirby::plugin('kirbynext/instagram-feed', [
     ],
     'siteMethods' => [
         'instagramFeed' => function () {
-            $options = option('kirbynext.instagram-feed');
+            $options = option('owebstudio.instagram-feed');
 
             try {
                 if (empty($options['accessToken']) === true) {
@@ -24,7 +24,7 @@ Kirby::plugin('kirbynext/instagram-feed', [
 
                 // check check
                 if ($options['cache'] === true) {
-                    $pluginCache = kirby()->cache('kirbynext.instagram-feed');
+                    $pluginCache = kirby()->cache('owebstudio.instagram-feed');
 
                     // refresh token
                     $tokenCacheData = $pluginCache->get('token');

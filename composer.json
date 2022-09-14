@@ -1,29 +1,29 @@
 {
-  "name": "kirbynext/instagram-feed",
+  "name": "owebstudio/instagram-feed",
   "description": "Instagram feed on your website for Kirby 3.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "kirby-plugin",
   "license": "MIT",
   "keywords": [
-    "kirbynext",
+    "owebstudio",
     "kirby",
     "kirby-3",
     "kirby3-plugin",
     "kirby-plugin",
-    "kirbynext-plugin",
+    "owebstudio-plugin",
     "kirby-instagram",
     "instagram",
     "instagram-feed"
   ],
-  "homepage": "https://kirbynext.com",
+  "homepage": "https://owebstudio.com",
   "support": {
-    "email": "support@kirbynext.com"
+    "email": "support@owebstudio.com"
   },
   "authors": [
     {
-      "name": "Kirby Next",
-      "email": "contact@kirbynext.com",
-      "homepage": "https://kirbynext.com"
+      "name": "oweb studio",
+      "email": "contact@owebstudio.com",
+      "homepage": "https://owebstudio.com"
     }
   ],
   "require": {
