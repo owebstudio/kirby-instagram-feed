@@ -57,13 +57,13 @@ Also `site()->instagramFeed()` and all items (`$feed`) in it are collection obje
 
 The default values of the package are:
 
-| Option | Type    | Default | Description                                                                                                                               |
-|:--- |:--------|:--------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| Option      | Type    | Default | Description                                                                                                                               |
+|:------------|:--------|:--------|:------------------------------------------------------------------------------------------------------------------------------------------|
 | accessToken | string  | null    | Access token for Instagram Basic Display API.                                                                                             |
-| cache | boolean | true    | Enable/disable caching feed and refresh token request. Highly recommended that the cache be enabled to avoid exceeding api request limit. |
-| debug | boolean | false   | Enable/disable debugging for this plugin.                                                                                                 |
-| expire | int     | 1440    | Sets how long the feed items are cached as minutes. Default is one day.                                                                   |
-| limit | int  | 20      | Sets how many feed items are fetch from API.                                                                                              |
+| cache       | boolean | true    | Enable/disable caching feed and refresh token request. Highly recommended that the cache be enabled to avoid exceeding api request limit. |
+| debug       | boolean | false   | Enable/disable debugging for this plugin.                                                                                                 |
+| expire      | int     | 1440    | Sets how long the feed items are cached as minutes. Default is one day.                                                                   |
+| limit       | int     | 20      | Sets how many feed items are fetch from API.                                                                                              |
 
 All the values can be updated in the `config.php` file and prefixed with `owebstudio.instagram-feed.`.
 
