@@ -4,17 +4,22 @@ Instagram feed on your website for Kirby 3.
 
 ## Instagram API
 
-This plugin powered by the new [Instagram Basic Display API](https://developers.facebook.com/docs/instagram-basic-display-api/).
+This plugin powered by the
+new [Instagram Basic Display API](https://developers.facebook.com/docs/instagram-basic-display-api/).
 
 ### Rate Limits
 
 There is an Instagram API
-request limit ([Instagram API rate limits](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#platform-rate-limits)). Don't worry! The plugin caches it periodically for the time
+request
+limit ([Instagram API rate limits](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#platform-rate-limits))
+. Don't worry! The plugin caches it periodically for the time
 you set from config.
 
 ### Expire Token
 
-Instagram access token expires after 2 months (60 days) by default. The plugin automatically refresh the token. If cache is enabled the plugin will do it 1 week before, otherwise it will do it on every request and this is not recommended. So you don't need to do anything.
+Instagram access token expires after 2 months (60 days) by default. The plugin automatically refresh the token. If cache
+is enabled the plugin will do it 1 week before, otherwise it will do it on every request and this is not recommended. So
+you don't need to do anything.
 
 ## Installation
 
@@ -45,6 +50,7 @@ If you want to customize it, you can look the example usage below:
 - $feed->id()
 - $feed->caption()
 - $feed->media_type()
+- $feed->asset() (Only available with `store` enabled option)
 - $feed->media_url()
 - $feed->permalink()
 - $feed->thumbnail_url()
@@ -61,11 +67,12 @@ The default values of the package are:
 |:------------|:--------|:--------|:------------------------------------------------------------------------------------------------------------------------------------------|
 | accessToken | string  | null    | Access token for Instagram Basic Display API.                                                                                             |
 | cache       | boolean | true    | Enable/disable caching feed and refresh token request. Highly recommended that the cache be enabled to avoid exceeding api request limit. |
+| store       | boolean | false   | Enable/disable storing images or videos for this plugin.                                                                                  |
 | debug       | boolean | false   | Enable/disable debugging for this plugin.                                                                                                 |
 | expire      | int     | 1440    | Sets how long the feed items are cached as minutes. Default is one day.                                                                   |
 | limit       | int     | 20      | Sets how many feed items are fetch from API.                                                                                              |
 
-All the values can be updated in the `config.php` file and prefixed with `owebstudio.instagram-feed.`.
+All the values can be updated in the `config.php` file and prefixed with `owebstudio.instagram-feed.`
 
 ## Sample options
 
@@ -77,6 +84,7 @@ return [
     'owebstudio.instagram-feed' => [
         'accessToken' => 'INSTAGRAM_ACCESS_TOKEN',
         'cache' => true,
+        'store' => true,
         'debug' => false,
         'expire' => 180, // 3 hours
         'limit' => 10 // fetch limit 

@@ -1,10 +1,34 @@
 <?php
 
+use Kirby\Cms\App as Kirby;
 use Kirby\Http\Remote;
+use Kirby\Toolkit\Str;
+
+function mediaPrefix(string $uri = null): string
+{
+    $index = Kirby::instance()->url();
+    $media = Kirby::instance()->url('media');
+
+    if (Str::startsWith($media, $index) === true) {
+        $media = Str::after($media, $index);
+    } else {
+        // media URL is outside of the site, we can't make routing work;
+        // fall back to the standard media route
+        $media = 'media';
+    }
+
+    $media = ltrim($media, '/');
+
+    if ($uri !== null) {
+        $media = $media . '/' . trim($uri, '/');
+    }
+
+    return $media;
+}
 
 function fetchInstagramFeed(): array
 {
-    $options = option('owebstudio.instagram-feed');
+    $options = Kirby::instance()->option('owebstudio.instagram-feed');
 
     $fields = 'id,caption,media_type,media_url,permalink,thumbnail_url,timestamp,username';
     $url = 'https://graph.instagram.com/me/media?fields=' . $fields . '&limit=' . $options['limit'] . '&access_token=' . $options['accessToken'];
@@ -21,7 +45,7 @@ function fetchInstagramFeed(): array
 
 function refreshInstagramToken(): ?string
 {
-    $options = option('owebstudio.instagram-feed');
+    $options = Kirby::instance()->option('owebstudio.instagram-feed');
 
     $url = 'https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=' . $options['accessToken'];
     $response = Remote::get($url)->json();
