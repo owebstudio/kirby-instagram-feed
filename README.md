@@ -49,7 +49,7 @@ If you want to customize it, you can look the example usage below:
 
 - $feed->id()
 - $feed->caption()
-- $feed->media_type()
+- $feed->media_type() (The Media's type. Can be `IMAGE`, `VIDEO` or `CAROUSEL_ALBUM`)
 - $feed->asset() (Only available with `store` enabled option)
 - $feed->media_url()
 - $feed->permalink()

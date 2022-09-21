@@ -4,6 +4,7 @@ use Kirby\Cms\App as Kirby;
 use Kirby\Toolkit\Collection;
 use Kirby\Filesystem\Dir;
 use Kirby\Filesystem\F;
+use Oweb\InstagramFeed;
 
 return [
     'instagramFeed' => function () {
@@ -23,7 +24,7 @@ return [
                 $tokenCacheData = $pluginCache->get('token');
 
                 if ($tokenCacheData === null) {
-                    $expireToken = refreshInstagramToken();
+                    $expireToken = InstagramFeed::refreshInstagramToken();
 
                     if ($expireToken !== null) {
                         $pluginCache->set('token', date('Y-m-d H:i:s'), $expireToken);
@@ -37,12 +38,12 @@ return [
                     $fromCache = true;
                     $feed = json_decode($feedCacheData, true);
                 } else {
-                    $feed = fetchInstagramFeed();
+                    $feed = InstagramFeed::fetchInstagramFeed();
                     $pluginCache->set('feed', json_encode($feed), $options['expire']);
                 }
             } else {
-                refreshInstagramToken();
-                $feed = fetchInstagramFeed();
+                InstagramFeed::refreshInstagramToken();
+                $feed = InstagramFeed::fetchInstagramFeed();
             }
         } catch (Exception $e) {
             if ($options['debug'] === true) {
@@ -75,7 +76,7 @@ return [
                         if ($remoteMedia = F::read($instagramUrl)) {
                             F::write($filePath, $remoteMedia);
 
-                            if ($asset = asset(mediaPrefix($relativeFilepath))) {
+                            if ($asset = InstagramFeed::mediaAsset($relativeFilepath)) {
                                 $item['asset'] = $asset;
                             }
                         }
@@ -85,7 +86,7 @@ return [
                     if ($remoteMedia = F::read($instagramUrl)) {
                         F::write($filePath, $remoteMedia);
 
-                        if ($asset = asset(mediaPrefix($relativeFilepath) )) {
+                        if ($asset = InstagramFeed::mediaAsset($relativeFilepath)) {
                             $item['asset'] = $asset;
                         }
                     }

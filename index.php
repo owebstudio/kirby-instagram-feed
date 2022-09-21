@@ -2,7 +2,9 @@
 
 use Kirby\Cms\App as Kirby;
 
-@include_once __DIR__ . '/helpers.php';
+load([
+    'oweb\\instagramfeed' => __DIR__ . '/src/InstagramFeed.php'
+]);
 
 Kirby::plugin('owebstudio/instagram-feed', [
     'options' => include __DIR__ . '/config/options.php',
