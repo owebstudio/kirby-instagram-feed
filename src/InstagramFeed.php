@@ -113,8 +113,8 @@ class InstagramFeed
     {
         $cacheId = [$page->id()];
 
-        if (Kirby::instance()->kirby()->multilang() === true) {
-            $cacheId[] = Kirby::instance()->kirby()->language()->code();
+        if ($page->kirby()->multilang() === true) {
+            $cacheId[] = $page->kirby()->language()->code();
         }
 
         $cacheId[] = 'html';
