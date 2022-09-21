@@ -11,7 +11,7 @@ use Kirby\Filesystem\Asset;
 
 class InstagramFeed
 {
-    public static function mediaAsset(string $uri = null): string
+    public static function mediaAsset(string $uri = null): Asset
     {
         return new Asset(static::mediaPrefix($uri));
     }
