@@ -2,8 +2,6 @@
 
 use Kirby\Cms\App as Kirby;
 use Kirby\Toolkit\Collection;
-use Kirby\Filesystem\Dir;
-use Kirby\Filesystem\F;
 use Oweb\InstagramFeed;
 
 return [
@@ -58,39 +56,20 @@ return [
         $collection = new Collection();
 
         foreach ($feed as $item) {
-            $item['asset'] = null;
+            $item['media'] = null;
+            $item['thumbnail'] = null;
+            $item['thumbnail_url'] ??= null;
+            $item['is_album'] = $item['media_type'] === 'CAROUSEL_ALBUM';
+            $item['is_image'] = $item['media_type'] === 'IMAGE';
+            $item['is_video'] = $item['media_type'] === 'VIDEO';
 
             if ($kirby->option('owebstudio.instagram-feed.store', false) === true) {
-                $instagramUrl = $item['media_url'];
+                if ($media = InstagramFeed::storeMediaUrl($item['media_url'], !$fromCache)) {
+                    $item['media'] = $media;
+                }
 
-                $filename = basename(parse_url($instagramUrl, PHP_URL_PATH));
-                $directory = 'plugins/owebstudio/instagram-feed';
-                $relativeFilepath = $directory . '/' . $filename;
-
-                $mediaPath = $kirby->root('media') . '/' . $directory;
-                $filePath = $mediaPath . '/' . $filename;
-
-                Dir::make($mediaPath);
-
-                if ($fromCache === true) {
-                    if (F::exists($mediaPath) === false) {
-                        if ($remoteMedia = F::read($instagramUrl)) {
-                            F::write($filePath, $remoteMedia);
-
-                            if ($asset = InstagramFeed::mediaAsset($relativeFilepath)) {
-                                $item['asset'] = $asset;
-                            }
-                        }
-                    }
-                } else {
-                    // if cache disabled, overwrite always
-                    if ($remoteMedia = F::read($instagramUrl)) {
-                        F::write($filePath, $remoteMedia);
-
-                        if ($asset = InstagramFeed::mediaAsset($relativeFilepath)) {
-                            $item['asset'] = $asset;
-                        }
-                    }
+                if ($thumbnail = InstagramFeed::storeMediaUrl($item['thumbnail_url'], !$fromCache)) {
+                    $item['thumbnail'] = $thumbnail;
                 }
             }
 

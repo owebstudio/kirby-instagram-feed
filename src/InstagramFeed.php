@@ -8,6 +8,8 @@ use Kirby\Cms\Page;
 use Kirby\Http\Remote;
 use Kirby\Toolkit\Str;
 use Kirby\Filesystem\Asset;
+use Kirby\Filesystem\Dir;
+use Kirby\Filesystem\F;
 
 class InstagramFeed
 {
@@ -101,8 +103,7 @@ class InstagramFeed
 
         if ($kirby->option('owebstudio.instagram-feed.cache', false) === true) {
             if ($pluginCache = $kirby->cache('owebstudio.instagram-feed')) {
-                $tokenFeedData = $pluginCache->get('feed');
-                return $tokenFeedData === null;
+                return $pluginCache->get('feed') === null;
             }
         }
 
@@ -115,7 +116,7 @@ class InstagramFeed
      * @return void
      * @throws \Kirby\Exception\InvalidArgumentException
      */
-    public static function flushPageCache(): void
+    public static function flushPagesCache(): void
     {
         $kirby = Kirby::instance();
 
@@ -123,34 +124,47 @@ class InstagramFeed
             $kirby->option('cache.pages.active', false) === true &&
             $cache = $kirby->cache('pages')
         ) {
-            $page = $kirby->site()->page();
+            // flush all pages cache
+            $cache->flush();
 
-            if ($page && $page->isCacheable() === true) {
-                $cacheId = static::cacheId($page);
-
-                if ($cache->exists($cacheId) === true) {
-                    $cache->remove($cacheId);
-                }
-            }
+            // refresh instagram feed
+            static::fetchInstagramFeed();
         }
     }
 
     /**
-     * Get page cache id
-     *
-     * @param Page $page
-     * @return string
+     * @param string|null $url
+     * @param bool $overwrite
+     * @return Asset|null
+     * @throws Exception
      */
-    public static function cacheId(Page $page): string
+    public static function storeMediaUrl(string $url = null, bool $overwrite = false): ?Asset
     {
-        $cacheId = [$page->id()];
-
-        if ($page->kirby()->multilang() === true) {
-            $cacheId[] = $page->kirby()->language()->code();
+        if (empty($url) === true) {
+            return null;
         }
 
-        $cacheId[] = 'html';
+        $kirby = Kirby::instance();
 
-        return implode('.', $cacheId);
+        $filename = basename(parse_url($url, PHP_URL_PATH));
+        $directory = 'plugins/owebstudio/instagram-feed';
+        $relativeFilepath = $directory . '/' . $filename;
+
+        $mediaPath = $kirby->root('media') . '/' . $directory;
+        $filePath = $mediaPath . '/' . $filename;
+
+        Dir::make($mediaPath);
+
+        if ($overwrite === false && F::exists($filePath) === true) {
+            return InstagramFeed::mediaAsset($relativeFilepath);
+        }
+
+        if ($remoteMedia = F::read($url)) {
+            F::write($filePath, $remoteMedia);
+
+            return InstagramFeed::mediaAsset($relativeFilepath);
+        }
+
+        return null;
     }
 }

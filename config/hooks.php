@@ -9,9 +9,9 @@ return [
         try {
             if (
                 Kirby::instance()->option('cache.pages.active', false) === true &&
-                InstagramFeed::isCacheExpired()
+                InstagramFeed::isCacheExpired() === true
             ) {
-                InstagramFeed::flushPageCache();
+                InstagramFeed::flushPagesCache();
             }
         } catch (Exception $e) {
             //
