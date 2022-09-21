@@ -11,11 +11,19 @@ use Kirby\Filesystem\Asset;
 
 class InstagramFeed
 {
+    /**
+     * @param string|null $uri
+     * @return Asset
+     */
     public static function mediaAsset(string $uri = null): Asset
     {
         return new Asset(static::mediaPrefix($uri));
     }
 
+    /**
+     * @param string|null $uri
+     * @return string
+     */
     public static function mediaPrefix(string $uri = null): string
     {
         $index = Kirby::instance()->url();
@@ -38,6 +46,10 @@ class InstagramFeed
         return $media;
     }
 
+    /**
+     * @return array
+     * @throws \Kirby\Exception\InvalidArgumentException
+     */
     public static function fetchInstagramFeed(): array
     {
         $options = Kirby::instance()->option('owebstudio.instagram-feed');
@@ -52,13 +64,7 @@ class InstagramFeed
             }
         }
 
-        $data = $response['data'] ?? [];
-
-        if (empty($data) === false) {
-            static::flushPageCache();
-        }
-
-        return $data;
+        return $response['data'] ?? [];
     }
 
     public static function refreshInstagramToken(): ?string
@@ -84,18 +90,44 @@ class InstagramFeed
     }
 
     /**
+     * Checks plugin api cache expiring
+     *
+     * @return bool
+     * @throws \Kirby\Exception\InvalidArgumentException
+     */
+    public static function isCacheExpired(): bool
+    {
+        $kirby = Kirby::instance();
+
+        if ($kirby->option('owebstudio.instagram-feed.cache', false) === true) {
+            if ($pluginCache = $kirby->cache('owebstudio.instagram-feed')) {
+                $tokenFeedData = $pluginCache->get('feed');
+                return $tokenFeedData === null;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Removes current page cache
      *
      * @return void
      * @throws \Kirby\Exception\InvalidArgumentException
      */
-    private static function flushPageCache(): void
+    public static function flushPageCache(): void
     {
-        $page = Kirby::instance()->site()->page();
+        $kirby = Kirby::instance();
 
-        if ($page && $page->isCacheable() === true) {
-            if ($cache = Kirby::instance()->cache('pages')) {
+        if (
+            $kirby->option('cache.pages.active', false) === true &&
+            $cache = $kirby->cache('pages')
+        ) {
+            $page = $kirby->site()->page();
+
+            if ($page && $page->isCacheable() === true) {
                 $cacheId = static::cacheId($page);
+
                 if ($cache->exists($cacheId) === true) {
                     $cache->remove($cacheId);
                 }
@@ -109,7 +141,7 @@ class InstagramFeed
      * @param Page $page
      * @return string
      */
-    private static function cacheId(Page $page): string
+    public static function cacheId(Page $page): string
     {
         $cacheId = [$page->id()];
 

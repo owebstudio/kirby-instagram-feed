@@ -9,7 +9,8 @@ use Oweb\InstagramFeed;
 return [
     'instagramFeed' => function () {
         $fromCache = false;
-        $options = Kirby::instance()->option('owebstudio.instagram-feed');
+        $kirby = Kirby::instance();
+        $options = $kirby->option('owebstudio.instagram-feed');
 
         try {
             if (empty($options['accessToken']) === true) {
@@ -18,7 +19,7 @@ return [
 
             // check check
             if ($options['cache'] === true) {
-                $pluginCache = Kirby::instance()->cache('owebstudio.instagram-feed');
+                $pluginCache = $kirby->cache('owebstudio.instagram-feed');
 
                 // refresh token
                 $tokenCacheData = $pluginCache->get('token');
@@ -59,14 +60,14 @@ return [
         foreach ($feed as $item) {
             $item['asset'] = null;
 
-            if (Kirby::instance()->option('owebstudio.instagram-feed.store', false) === true) {
+            if ($kirby->option('owebstudio.instagram-feed.store', false) === true) {
                 $instagramUrl = $item['media_url'];
 
                 $filename = basename(parse_url($instagramUrl, PHP_URL_PATH));
                 $directory = 'plugins/owebstudio/instagram-feed';
                 $relativeFilepath = $directory . '/' . $filename;
 
-                $mediaPath = Kirby::instance()->root('media') . '/' . $directory;
+                $mediaPath = $kirby->root('media') . '/' . $directory;
                 $filePath = $mediaPath . '/' . $filename;
 
                 Dir::make($mediaPath);

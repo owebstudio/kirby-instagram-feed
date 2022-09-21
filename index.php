@@ -7,6 +7,7 @@ load([
 ]);
 
 Kirby::plugin('owebstudio/instagram-feed', [
+    'hooks' => include __DIR__ . '/config/hooks.php',
     'options' => include __DIR__ . '/config/options.php',
     'routes' => include __DIR__ . '/config/routes.php',
     'siteMethods' => include __DIR__ . '/config/siteMethods.php',
