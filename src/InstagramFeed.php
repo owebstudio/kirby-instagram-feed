@@ -4,7 +4,6 @@ namespace Oweb;
 
 use Exception;
 use Kirby\Cms\App as Kirby;
-use Kirby\Cms\Page;
 use Kirby\Http\Remote;
 use Kirby\Toolkit\Str;
 use Kirby\Filesystem\Asset;
