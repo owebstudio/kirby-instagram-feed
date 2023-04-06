@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'instagram-feed' => __DIR__ . '/snippets/instagram-feed.php'
+    'instagram-feed' => dirname(__DIR__) . '/snippets/instagram-feed.php'
 ];
