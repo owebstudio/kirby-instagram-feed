@@ -63,7 +63,7 @@ class InstagramFeed
         $options = Kirby::instance()->option('owebstudio.instagram-feed');
 
         $fields = 'id,media_type,media_url,permalink,thumbnail_url,timestamp,username';
-        $url = 'https://graph.instagram.com/' . $id . '/children?fields=' . $fields . '&limit=' . $options['limit'] . '&access_token=' . $options['accessToken'];
+        $url = 'https://graph.instagram.com/' . $id . '/children?fields=' . $fields . '&access_token=' . $options['accessToken'];
         $response = Remote::get($url)->json();
 
         if (empty($response) || empty($response['error']) === false) {
@@ -162,12 +162,13 @@ class InstagramFeed
         return null;
     }
 
-    public static function feedToCollection(array $data = [], bool $cache = false): Collection
+    public static function feedToCollection(array $data = [], bool $cache = false, array $parent = null): Collection
     {
         $kirby = Kirby::instance();
+        $options = $kirby->option('owebstudio.instagram-feed');
         $collection = new Collection();
 
-        foreach ($data as $item) {
+        foreach ($data as $index => $item) {
             $item['media'] = null;
             $item['thumbnail'] = null;
             $item['thumbnail_url'] ??= null;
@@ -176,9 +177,40 @@ class InstagramFeed
             $item['is_video'] = $item['media_type'] === 'VIDEO';
             $item['children'] = null;
 
+            // fix album permalink
+            if ($parent !== null) {
+                $item['permalink'] = $parent['permalink'] . '?img_index=' . ($index + 1);
+            }
+
             if ($item['is_album'] === true) {
-                $children = InstagramFeed::fetchMediaChildren($item['id']);
-                $item['children'] = InstagramFeed::feedToCollection($children, $cache);
+                if ($options['cache'] === true) {
+                    $pluginCache = $kirby->cache('owebstudio.instagram-feed');
+
+                    // refresh token
+                    $tokenCacheData = $pluginCache->get('token');
+
+                    if ($tokenCacheData === null) {
+                        $expireToken = InstagramFeed::refreshToken();
+
+                        if ($expireToken !== null) {
+                            $pluginCache->set('token', date('Y-m-d H:i:s'), $expireToken);
+                        }
+                    }
+
+                    // feed
+                    $feedCacheData = $pluginCache->get('feed.' . $item['id']);
+
+                    if ($feedCacheData !== null) {
+                        $children = json_decode($feedCacheData, true);
+                    } else {
+                        $children = InstagramFeed::fetchMediaChildren($item['id']);
+                        $pluginCache->set('feed.' . $item['id'], json_encode($children), $options['expire']);
+                    }
+                } else {
+                    $children = InstagramFeed::fetchMediaChildren($item['id']);
+                }
+
+                $item['children'] = InstagramFeed::feedToCollection($children, $cache, $item);
             } else if ($kirby->option('owebstudio.instagram-feed.store', false) === true) {
                 if ($media = InstagramFeed::storeMediaUrl($item['media_url'], !$cache)) {
                     $item['media'] = $media;

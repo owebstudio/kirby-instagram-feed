@@ -60,8 +60,31 @@ If you want to customize it, you can look the example usage below:
 - $feed->thumbnail_url()
 - $feed->timestamp()
 - $feed->username()
+- $feed->children() (Only available for the `CAROUSEL_ALBUM` media type)
 
 Also `site()->instagramFeed()` and all items (`$feed`) in it are collection objects and have all collection methods.
+
+### Showing album feeds
+
+If the feed item is an album media type, it does not have a media element/url. Album media type is a collection of multiple media. For this you should call the `$feed->children()` method. This method returns a media collection. Here is an example of usage:
+
+```php
+<?php if ($feed->is_album() === true && $children = $feed->children()): ?>
+    <?php foreach ($children as $child): ?>
+        <?php if ($child->is_image() === true): ?>
+            <a href="<?= $child->permalink() ?>" target="_blank">
+                <img title="<?= $child->caption() ?>" src="<?= $child->media_url() ?>">
+            </a>
+        <?php elseif ($child->is_video() === true): ?>
+            <a href="<?= $child->permalink() ?>" target="_blank">
+                <video width="100%" height="100%" autoplay preload muted loop>
+                    <source src="<?= $child->media_url() ?>" type="video/mp4">
+                </video>
+            </a>
+        <?php endif ?>
+    <?php endforeach ?>
+<?php endif ?>
+```
 
 ## Options
 
