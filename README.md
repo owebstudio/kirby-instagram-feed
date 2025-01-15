@@ -1,11 +1,13 @@
 # Kirby Instagram Feed
 
-Instagram feed on your website for Kirby 3.
+Instagram feed on your website for Kirby 3 & 4.
+
+⚠️ Client must have a business professional/creator account for this to work
 
 ## Instagram API
 
 This plugin powered by the
-new [Instagram Basic Display API](https://developers.facebook.com/docs/instagram-basic-display-api/).
+new [Instagram API](https://developers.facebook.com/docs/instagram-platform).
 
 ### Rate Limits
 
@@ -66,7 +68,9 @@ Also `site()->instagramFeed()` and all items (`$feed`) in it are collection obje
 
 ### Showing album feeds
 
-If the feed item is an album media type, it does not have a media element/url. Album media type is a collection of multiple media. For this you should call the `$feed->children()` method. This method returns a media collection. Here is an example of usage:
+If the feed item is an album media type, it does not have a media element/url. Album media type is a collection of
+multiple media. For this you should call the `$feed->children()` method. This method returns a media collection. Here is
+an example of usage:
 
 ```php
 <?php if ($feed->is_album() === true && $children = $feed->children()): ?>
@@ -119,9 +123,18 @@ return [
 ];
 ```
 
-## Resources
+## Creating Instagram token
 
-Here are a few resources on Instagram access token creation:
+Follow the steps below to create a new Instagram token. Remember, client must have a business professional/creator account for this to work
 
-- https://elfsight.com/blog/2016/05/how-to-get-instagram-access-token/
-- https://www.youtube.com/watch?v=uj9WpuFIZb8
+1. Login to https://developers.facebook.com/
+2. Create a new App
+3. Make an App name
+4. Choose "Other" for use case
+5. Choose "Business" for app type
+6. Confirm "Create App"
+7. Add Instagram product to your App
+8. Add client Instagram account to the Instagram API
+9. Generate a new token
+10. Add this token to the site/config.php or other config environment file
+11. Delete media folder and site/cache
