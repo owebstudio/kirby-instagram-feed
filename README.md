@@ -1,6 +1,6 @@
 # Kirby Instagram Feed
 
-Instagram feed on your website for Kirby 3 & 4.
+Instagram feed on your website for Kirby 3, 4 & 5 (PHP 8.0 – 8.4).
 
 ⚠️ Client must have a business professional/creator account for this to work
 
@@ -41,9 +41,11 @@ If you want to customize it, you can look the example usage below:
 
 ```php
 <?php foreach (site()->instagramFeed() as $feed): ?>
-    <a href="<?= $feed->permalink() ?>" target="_blank">
-        <img title="<?= $feed->caption() ?>" src="<?= $feed->media_url() ?>">
-    </a>
+    <?php if ($src = $feed->media_url()): ?>
+        <a href="<?= $feed->permalink() ?>" target="_blank">
+            <img title="<?= $feed->caption() ?>" src="<?= $src ?>">
+        </a>
+    <?php endif ?>
 <?php endforeach ?>
 ```
 
@@ -56,7 +58,9 @@ If you want to customize it, you can look the example usage below:
 - $feed->is_video()
 - $feed->media() (Only available with `store` enabled option)
 - $feed->media_type() (The Media's type. Can be `IMAGE`, `VIDEO` or `CAROUSEL_ALBUM`)
-- $feed->media_url()
+- $feed->media_url() (Can be `null`. Instagram omits it for albums without a
+  cover and for media flagged for a copyright violation, so always check it
+  before rendering)
 - $feed->permalink()
 - $feed->thumbnail() (Only available with `store` enabled option)
 - $feed->thumbnail_url()

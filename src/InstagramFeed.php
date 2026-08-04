@@ -14,12 +14,12 @@ use Kirby\Toolkit\Str;
 class InstagramFeed
 {
 
-    public static function mediaAsset(string $uri = null): Asset
+    public static function mediaAsset(?string $uri = null): Asset
     {
         return new Asset(static::mediaPrefix($uri));
     }
 
-    public static function mediaPrefix(string $uri = null): string
+    public static function mediaPrefix(?string $uri = null): string
     {
         $index = Kirby::instance()->url();
         $media = Kirby::instance()->url('media');
@@ -75,7 +75,7 @@ class InstagramFeed
         return $response['data'] ?? [];
     }
 
-    public static function refreshToken(): ?string
+    public static function refreshToken(): ?int
     {
         $options = Kirby::instance()->option('owebstudio.instagram-feed');
 
@@ -91,7 +91,7 @@ class InstagramFeed
         // renew token expire 1 week before
         if (empty($response['expires_in']) === false) {
             // return as minutes for cache
-            return round(((int)$response['expires_in'] - (86400 * 7)) / 60);
+            return (int)round(((int)$response['expires_in'] - (86400 * 7)) / 60);
         }
 
         return null;
@@ -132,15 +132,21 @@ class InstagramFeed
         }
     }
 
-    public static function storeMediaUrl(string $url = null, bool $overwrite = false): ?Asset
+    public static function storeMediaUrl(?string $url = null, bool $overwrite = false): ?Asset
     {
         if (empty($url) === true) {
             return null;
         }
 
+        $path = parse_url($url, PHP_URL_PATH);
+
+        if (empty($path) === true) {
+            return null;
+        }
+
         $kirby = Kirby::instance();
 
-        $filename = basename(parse_url($url, PHP_URL_PATH));
+        $filename = basename($path);
         $directory = 'plugins/owebstudio/instagram-feed';
         $relativeFilepath = $directory . '/' . $filename;
 
@@ -162,16 +168,35 @@ class InstagramFeed
         return null;
     }
 
-    public static function feedToCollection(array $data = [], bool $cache = false, array $parent = null): Collection
+    /**
+     * Default values for every requested API field
+     *
+     * The API omits fields it has no value for, e.g. `caption` for media
+     * without a caption or `media_url` for media that has been flagged for
+     * a copyright violation.
+     */
+    public const FIELDS = [
+        'id' => null,
+        'caption' => null,
+        'media_type' => null,
+        'media_url' => null,
+        'permalink' => null,
+        'thumbnail_url' => null,
+        'timestamp' => null,
+        'username' => null
+    ];
+
+    public static function feedToCollection(array $data = [], bool $cache = false, ?array $parent = null): Collection
     {
         $kirby = Kirby::instance();
         $options = $kirby->option('owebstudio.instagram-feed');
         $collection = new Collection();
 
         foreach ($data as $index => $item) {
+            $item = array_merge(static::FIELDS, $item);
+
             $item['media'] = null;
             $item['thumbnail'] = null;
-            $item['thumbnail_url'] ??= null;
             $item['is_album'] = $item['media_type'] === 'CAROUSEL_ALBUM';
             $item['is_image'] = $item['media_type'] === 'IMAGE';
             $item['is_video'] = $item['media_type'] === 'VIDEO';
@@ -182,7 +207,7 @@ class InstagramFeed
                 $item['permalink'] = $parent['permalink'] . '?img_index=' . ($index + 1);
             }
 
-            if ($item['is_album'] === true) {
+            if ($item['is_album'] === true && empty($item['id']) === false) {
                 if ($options['cache'] === true) {
                     $pluginCache = $kirby->cache('owebstudio.instagram-feed');
 
@@ -201,7 +226,7 @@ class InstagramFeed
                     $feedCacheData = $pluginCache->get('feed.' . $item['id']);
 
                     if ($feedCacheData !== null) {
-                        $children = json_decode($feedCacheData, true);
+                        $children = json_decode($feedCacheData, true) ?? [];
                     } else {
                         $children = InstagramFeed::fetchMediaChildren($item['id']);
                         $pluginCache->set('feed.' . $item['id'], json_encode($children), $options['expire']);

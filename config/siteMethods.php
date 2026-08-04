@@ -34,7 +34,7 @@ return [
 
                 if ($feedCacheData !== null) {
                     $fromCache = true;
-                    $feed = json_decode($feedCacheData, true);
+                    $feed = json_decode($feedCacheData, true) ?? [];
                 } else {
                     $feed = InstagramFeed::fetchFeed();
                     $pluginCache->set('feed', json_encode($feed), $options['expire']);
