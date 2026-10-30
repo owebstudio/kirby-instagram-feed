@@ -1,5 +1,7 @@
 # Kirby Instagram Feed
 
+[![Buy a license for €29.99](https://img.shields.io/badge/Buy_a_license-%E2%82%AC29.99-7047EB?style=for-the-badge&labelColor=5423E7)](https://owebstudio.lemonsqueezy.com/checkout/buy/29afd8d3-78d4-4cd5-a19b-a13c3d3b5e1b)
+
 Instagram feed on your website for Kirby 5 (PHP 8.2 to 8.5). For Kirby 3 and 4, use
 [version 1.4.0](https://github.com/owebstudio/kirby-instagram-feed/releases/tag/1.4.0).
 
@@ -152,11 +154,11 @@ Follow the steps below to create a new Instagram token. Remember, client must ha
 ## License
 
 Instagram Feed is a commercial plugin. It is free to use on your local computer and on staging sites. A live site needs
-a license key: buy it on [owebstudio.com](https://owebstudio.com/kirby/plugins/instagram-feed) and activate it in the
-Panel's System view (Kirby 5 and newer) by clicking the license status of the plugin.
+a license key: [buy one](https://owebstudio.lemonsqueezy.com/checkout/buy/29afd8d3-78d4-4cd5-a19b-a13c3d3b5e1b) and
+activate it in the Panel's System view (Kirby 5 and newer) by clicking the license status of the plugin.
 
 Without a license key, the plugin does not renew the Instagram access token on a live site. The feed keeps working until
 the token expires (60 days after it was created or last renewed). After that, the snippet renders nothing.
 
 [oweb studio Commercial License](LICENSE.md). Versions released under the MIT license stay MIT. The current license is
-available at https://owebstudio.com/license.
+available at https://github.com/owebstudio/.github/blob/main/LICENSE.md.
