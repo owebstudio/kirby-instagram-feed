@@ -10,6 +10,7 @@ use Kirby\Filesystem\Dir;
 use Kirby\Filesystem\F;
 use Kirby\Toolkit\Collection;
 use Kirby\Toolkit\Str;
+use Oweb\InstagramFeed\License\License;
 
 class InstagramFeed
 {
@@ -77,6 +78,11 @@ class InstagramFeed
 
     public static function refreshToken(): ?int
     {
+        // live sites need a license key to renew the token
+        if (License::for('owebstudio/instagram-feed')?->isLocked() === true) {
+            return null;
+        }
+
         $options = Kirby::instance()->option('owebstudio.instagram-feed');
 
         $url = 'https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=' . $options['accessToken'];

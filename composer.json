@@ -1,18 +1,13 @@
 {
-  "name": "owebstudio/instagram-feed",
-  "description": "Instagram feed on your website for Kirby 3, 4 & 5.",
-  "version": "1.4.0",
+  "name": "owebstudio/kirby-instagram-feed",
+  "description": "Instagram feed on your website for Kirby.",
   "type": "kirby-plugin",
-  "license": "MIT",
+  "license": "proprietary",
   "keywords": [
     "owebstudio",
     "owebstudio-plugin",
     "kirby",
-    "kirby-3",
-    "kirby-4",
     "kirby-5",
-    "kirby3-plugin",
-    "kirby4-plugin",
     "kirby5-plugin",
     "kirby-plugin",
     "kirby-instagram",
@@ -31,8 +26,14 @@
     }
   ],
   "require": {
-    "php": "^8.0",
+    "php": "^8.2",
     "getkirby/composer-installer": "^1.2"
+  },
+  "require-dev": {
+    "owebstudio/kirby-license": "^1.0"
+  },
+  "conflict": {
+    "getkirby/cms": "<5.0"
   },
   "config": {
     "optimize-autoloader": true,
@@ -40,8 +41,10 @@
     "sort-packages": true
   },
   "extra": {
-    "installer-name": "kirby-instagram-feed"
+    "installer-name": "kirby-instagram-feed",
+    "kirby": {
+      "compatible": "^5.0"
+    }
   },
-  "minimum-stability": "dev",
   "prefer-stable": true
 }
