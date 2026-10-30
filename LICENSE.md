@@ -70,4 +70,4 @@ Ahmet Bora (oweb studio)
 Unalan Cd. Libadiye Sk. No: 82/E Emaar Square Heights D:313
 Üsküdar, Istanbul, Turkey
 
-The current version of this license is available at https://owebstudio.com/license.
+The current version of this license is available at https://github.com/owebstudio/.github/blob/main/LICENSE.md.
