@@ -1,6 +1,7 @@
 # Kirby Instagram Feed
 
-Instagram feed on your website for Kirby 3, 4 & 5 (PHP 8.0 – 8.4).
+Instagram feed on your website for Kirby 5 (PHP 8.2 to 8.5). For Kirby 3 and 4, use
+[version 1.4.0](https://github.com/owebstudio/kirby-instagram-feed/releases/tag/1.4.0).
 
 ⚠️ Client must have a business professional/creator account for this to work
 
