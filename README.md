@@ -42,8 +42,8 @@ If you want to customize it, you can look the example usage below:
 ```php
 <?php foreach (site()->instagramFeed() as $feed): ?>
     <?php if ($src = $feed->media_url()): ?>
-        <a href="<?= $feed->permalink() ?>" target="_blank">
-            <img title="<?= $feed->caption() ?>" src="<?= $src ?>">
+        <a href="<?= esc($feed->permalink() ?? '') ?>" target="_blank">
+            <img title="<?= esc($feed->caption() ?? '') ?>" src="<?= esc($src) ?>">
         </a>
     <?php endif ?>
 <?php endforeach ?>
@@ -70,6 +70,8 @@ If you want to customize it, you can look the example usage below:
 
 Also `site()->instagramFeed()` and all items (`$feed`) in it are collection objects and have all collection methods.
 
+The values come from Instagram, so escape them in your HTML, e.g. with `esc($value)`.
+
 ### Showing album feeds
 
 If the feed item is an album media type, it does not have a media element/url. Album media type is a collection of
@@ -79,14 +81,14 @@ an example of usage:
 ```php
 <?php if ($feed->is_album() === true && $children = $feed->children()): ?>
     <?php foreach ($children as $child): ?>
-        <?php if ($child->is_image() === true): ?>
-            <a href="<?= $child->permalink() ?>" target="_blank">
-                <img title="<?= $child->caption() ?>" src="<?= $child->media_url() ?>">
+        <?php if ($child->is_image() === true && $src = $child->media_url()): ?>
+            <a href="<?= esc($child->permalink() ?? '') ?>" target="_blank">
+                <img title="<?= esc($child->caption() ?? '') ?>" src="<?= esc($src) ?>">
             </a>
-        <?php elseif ($child->is_video() === true): ?>
-            <a href="<?= $child->permalink() ?>" target="_blank">
+        <?php elseif ($child->is_video() === true && $src = $child->media_url()): ?>
+            <a href="<?= esc($child->permalink() ?? '') ?>" target="_blank">
                 <video width="100%" height="100%" autoplay preload muted loop>
-                    <source src="<?= $child->media_url() ?>" type="video/mp4">
+                    <source src="<?= esc($src) ?>" type="video/mp4">
                 </video>
             </a>
         <?php endif ?>
