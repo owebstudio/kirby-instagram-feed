@@ -3,7 +3,7 @@
   "description": "Instagram feed on your website for Kirby 3, 4 & 5.",
   "version": "1.4.0",
   "type": "kirby-plugin",
-  "license": "MIT",
+  "license": "proprietary",
   "keywords": [
     "owebstudio",
     "owebstudio-plugin",
