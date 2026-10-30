@@ -1,7 +1,6 @@
 {
   "name": "owebstudio/instagram-feed",
   "description": "Instagram feed on your website for Kirby.",
-  "version": "1.4.0",
   "type": "kirby-plugin",
   "license": "proprietary",
   "keywords": [
@@ -47,6 +46,5 @@
       "compatible": "^5.0"
     }
   },
-  "minimum-stability": "dev",
   "prefer-stable": true
 }
