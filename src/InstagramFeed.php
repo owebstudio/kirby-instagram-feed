@@ -97,41 +97,6 @@ class InstagramFeed
         return null;
     }
 
-    /**
-     * Checks plugin api cache expiring
-     */
-    public static function isCacheExpired(): bool
-    {
-        $kirby = Kirby::instance();
-
-        if ($kirby->option('owebstudio.instagram-feed.cache', false) === true) {
-            if ($pluginCache = $kirby->cache('owebstudio.instagram-feed')) {
-                return $pluginCache->get('feed') === null;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Removes current page cache
-     */
-    public static function flushPagesCache(): void
-    {
-        $kirby = Kirby::instance();
-
-        if (
-            $kirby->option('cache.pages.active', false) === true &&
-            $cache = $kirby->cache('pages')
-        ) {
-            // flush all pages cache
-            $cache->flush();
-
-            // refresh instagram feed
-            static::fetchFeed();
-        }
-    }
-
     public static function storeMediaUrl(?string $url = null, bool $overwrite = false): ?Asset
     {
         if (empty($url) === true) {

@@ -39,6 +39,11 @@ return [
                     $feed = InstagramFeed::fetchFeed();
                     $pluginCache->set('feed', json_encode($feed), $options['expire']);
                 }
+
+                // cached pages with the feed expire together with the feed
+                if ($expires = $pluginCache->expires('feed')) {
+                    $kirby->response()->expires($expires);
+                }
             } else {
                 InstagramFeed::refreshToken();
                 $feed = InstagramFeed::fetchFeed();
