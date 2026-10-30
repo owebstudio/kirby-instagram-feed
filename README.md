@@ -1,3 +1,5 @@
+![Instagram Feed, a Kirby plugin by oweb studio. Show your latest Instagram posts on your Kirby site.](.github/cover.png)
+
 # Kirby Instagram Feed
 
 [![Buy a license for €29.99](https://img.shields.io/badge/Buy_a_license-%E2%82%AC29.99-7047EB?style=for-the-badge&labelColor=5423E7)](https://owebstudio.lemonsqueezy.com/checkout/buy/29afd8d3-78d4-4cd5-a19b-a13c3d3b5e1b)
