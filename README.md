@@ -17,6 +17,9 @@ limit ([Instagram API rate limits](https://developers.facebook.com/docs/graph-ap
 . Don't worry! The plugin caches it periodically for the time
 you set from config.
 
+If Kirby's [pages cache](https://getkirby.com/docs/guide/cache) is active, pages that show the feed are cached until the
+feed expires, so they always show a fresh feed.
+
 ### Expire Token
 
 Instagram access token expires after 2 months (60 days) by default. The plugin automatically refresh the token. If cache
