@@ -24,7 +24,7 @@ feed expires, so they always show a fresh feed.
 
 Instagram access token expires after 2 months (60 days) by default. The plugin automatically refresh the token. If cache
 is enabled the plugin will do it 1 week before, otherwise it will do it on every request and this is not recommended. So
-you don't need to do anything.
+you don't need to do anything. On a live site this needs a license key (see [License](#license)).
 
 ## Installation
 
@@ -145,3 +145,15 @@ Follow the steps below to create a new Instagram token. Remember, client must ha
 9. Generate a new token
 10. Add this token to the site/config.php or other config environment file
 11. Delete media folder and site/cache
+
+## License
+
+Instagram Feed is a commercial plugin. It is free to use on your local computer and on staging sites. A live site needs
+a license key: buy it on [owebstudio.com](https://owebstudio.com/kirby/plugins/instagram-feed) and activate it in the
+Panel's System view (Kirby 5 and newer) by clicking the license status of the plugin.
+
+Without a license key, the plugin does not renew the Instagram access token on a live site. The feed keeps working until
+the token expires (60 days after it was created or last renewed). After that, the snippet renders nothing.
+
+[oweb studio Commercial License](LICENSE.md). Versions released under the MIT license stay MIT. The current license is
+available at https://owebstudio.com/license.
