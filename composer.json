@@ -1,5 +1,5 @@
 {
-  "name": "owebstudio/instagram-feed",
+  "name": "owebstudio/kirby-instagram-feed",
   "description": "Instagram feed on your website for Kirby.",
   "type": "kirby-plugin",
   "license": "proprietary",
