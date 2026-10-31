@@ -5,9 +5,9 @@ namespace Oweb;
 use Exception;
 use Kirby\Cms\App as Kirby;
 use Kirby\Data\Data;
-use Kirby\Http\Remote;
 use Kirby\Filesystem\Asset;
 use Kirby\Filesystem\F;
+use Kirby\Http\Remote;
 use Kirby\Toolkit\Collection;
 use Kirby\Toolkit\Str;
 use Oweb\InstagramFeed\License\License;
@@ -29,63 +29,161 @@ class InstagramFeed
      */
     public const RETRY = 60;
 
-    public static function mediaAsset(?string $uri = null): Asset
+    /**
+     * Default values for every requested API field
+     *
+     * The API omits fields it has no value for, e.g. `caption` for media
+     * without a caption or `media_url` for media that has been flagged for
+     * a copyright violation.
+     */
+    public const FIELDS = [
+        'id' => null,
+        'caption' => null,
+        'media_type' => null,
+        'media_url' => null,
+        'permalink' => null,
+        'thumbnail_url' => null,
+        'timestamp' => null,
+        'username' => null
+    ];
+
+    public static function options(): array
     {
-        return new Asset(static::mediaPrefix($uri));
+        return Kirby::instance()->option('owebstudio.instagram-feed');
     }
 
-    public static function mediaPrefix(?string $uri = null): string
+    /**
+     * Returns the feed, from the cache if possible
+     */
+    public static function feed(): Collection
     {
-        $index = Kirby::instance()->url();
-        $media = Kirby::instance()->url('media');
+        $kirby = Kirby::instance();
+        $options = static::options();
 
-        if (Str::startsWith($media, $index) === true) {
-            $media = Str::after($media, $index);
-        } else {
-            // media URL is outside of the site, we can't make routing work;
-            // fall back to the standard media route
-            $media = 'media';
-        }
+        try {
+            if (empty($options['accessToken']) === true) {
+                throw new Exception('Instagram API access token required!');
+            }
 
-        $media = ltrim($media, '/');
+            if ($options['cache'] === true) {
+                $pluginCache = $kirby->cache('owebstudio.instagram-feed');
+                $feed = $pluginCache->get('feed');
 
-        if ($uri !== null) {
-            $media = $media . '/' . trim($uri, '/');
-        }
+                if (is_array($feed) === false) {
+                    static::refresh();
+                    $feed = $pluginCache->get('feed', []);
+                }
 
-        return $media;
-    }
-
-    public static function fetchFeed(): array
-    {
-        $options = Kirby::instance()->option('owebstudio.instagram-feed');
-
-        $fields = 'id,caption,media_type,media_url,permalink,thumbnail_url,timestamp,username';
-        $url = 'https://graph.instagram.com/me/media?fields=' . $fields . '&limit=' . $options['limit'] . '&access_token=' . static::token();
-        $response = Remote::get($url)->json();
-
-        if (empty($response) || empty($response['error']) === false) {
+                // cached pages with the feed expire together with the feed
+                if ($expires = $pluginCache->expires('feed')) {
+                    $kirby->response()->expires($expires);
+                }
+            } else {
+                static::refreshToken();
+                $feed = static::fetchFeed() ?? [];
+            }
+        } catch (Exception $e) {
             if ($options['debug'] === true) {
+                throw $e;
+            }
+
+            $feed = [];
+        }
+
+        return static::feedToCollection($feed);
+    }
+
+    /**
+     * Fetches the feed and caches it. If the Instagram API fails,
+     * the last feed stays in the cache and the API is tried again later.
+     *
+     * @return array|null The new feed or `null` if fetching failed
+     */
+    public static function refresh(): ?array
+    {
+        $options = static::options();
+        $pluginCache = Kirby::instance()->cache('owebstudio.instagram-feed');
+
+        static::refreshToken();
+
+        if (($feed = static::fetchFeed()) !== null) {
+            $pluginCache->set('feed', $feed, $options['expire']);
+            $pluginCache->set('last', $feed);
+
+            return $feed;
+        }
+
+        $last = $pluginCache->get('last');
+        $pluginCache->set('feed', is_array($last) ? $last : [], min($options['expire'], static::RETRY));
+
+        return null;
+    }
+
+    /**
+     * Sends a request to the Instagram API
+     *
+     * @return array|null The response or `null` for errors
+     */
+    public static function request(string $path, array $query = []): ?array
+    {
+        $options = static::options();
+        $query['access_token'] = static::token();
+
+        try {
+            $response = Remote::get('https://graph.instagram.com/' . $path . '?' . http_build_query($query))->json();
+
+            if (empty($response) === true || empty($response['error']) === false) {
                 throw new Exception($response['error']['message'] ?? 'Fetching Instagram API failed!');
+            }
+        } catch (Exception $e) {
+            if ($options['debug'] === true) {
+                throw $e;
+            }
+
+            return null;
+        }
+
+        return $response;
+    }
+
+    /**
+     * Fetches the latest media, with the children of albums
+     *
+     * @return array|null The feed or `null` if fetching failed
+     */
+    public static function fetchFeed(): ?array
+    {
+        $options = static::options();
+
+        $response = static::request('me/media', [
+            'fields' => 'id,caption,media_type,media_url,permalink,thumbnail_url,timestamp,username',
+            'limit' => $options['limit']
+        ]);
+
+        if ($response === null) {
+            return null;
+        }
+
+        $feed = $response['data'] ?? [];
+
+        foreach ($feed as $index => $item) {
+            if (($item['media_type'] ?? null) === 'CAROUSEL_ALBUM' && empty($item['id']) === false) {
+                $feed[$index]['children'] = static::fetchMediaChildren($item['id']);
             }
         }
 
-        return $response['data'] ?? [];
+        if ($options['store'] === true) {
+            static::storeFeed($feed);
+        }
+
+        return $feed;
     }
 
-    public static function fetchMediaChildren($id): array
+    public static function fetchMediaChildren(string $id): array
     {
-        $options = Kirby::instance()->option('owebstudio.instagram-feed');
-
-        $fields = 'id,media_type,media_url,permalink,thumbnail_url,timestamp,username';
-        $url = 'https://graph.instagram.com/' . $id . '/children?fields=' . $fields . '&access_token=' . static::token();
-        $response = Remote::get($url)->json();
-
-        if (empty($response) || empty($response['error']) === false) {
-            if ($options['debug'] === true) {
-                throw new Exception($response['error']['message'] ?? 'Fetching Instagram API failed!');
-            }
-        }
+        $response = static::request($id . '/children', [
+            'fields' => 'id,media_type,media_url,permalink,thumbnail_url,timestamp,username'
+        ]);
 
         return $response['data'] ?? [];
     }
@@ -95,7 +193,7 @@ class InstagramFeed
      */
     public static function token(): ?string
     {
-        return static::tokenData()['token'] ?? Kirby::instance()->option('owebstudio.instagram-feed.accessToken');
+        return static::tokenData()['token'] ?? static::options()['accessToken'];
     }
 
     /**
@@ -123,7 +221,7 @@ class InstagramFeed
 
     protected static function tokenHash(): string
     {
-        return hash('sha256', (string)Kirby::instance()->option('owebstudio.instagram-feed.accessToken'));
+        return hash('sha256', (string)static::options()['accessToken']);
     }
 
     /**
@@ -136,7 +234,6 @@ class InstagramFeed
             return;
         }
 
-        $options = Kirby::instance()->option('owebstudio.instagram-feed');
         $data = static::tokenData();
         $now = time();
 
@@ -149,14 +246,9 @@ class InstagramFeed
             return;
         }
 
-        $url = 'https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=' . static::token();
-        $response = Remote::get($url)->json();
-
-        if (empty($response) || empty($response['error']) === false) {
-            if ($options['debug'] === true) {
-                throw new Exception($response['error']['message'] ?? 'Fetching Instagram API failed!');
-            }
-        }
+        $response = static::request('refresh_access_token', [
+            'grant_type' => 'ig_refresh_token'
+        ]);
 
         if (empty($response['access_token']) === false && empty($response['expires_in']) === false) {
             $data = [
@@ -173,10 +265,37 @@ class InstagramFeed
         try {
             Data::write(static::tokenFile(), $data, 'json');
         } catch (Exception $e) {
-            if ($options['debug'] === true) {
+            if (static::options()['debug'] === true) {
                 throw $e;
             }
         }
+    }
+
+    public static function mediaAsset(?string $uri = null): Asset
+    {
+        return new Asset(static::mediaPrefix($uri));
+    }
+
+    public static function mediaPrefix(?string $uri = null): string
+    {
+        $index = Kirby::instance()->url();
+        $media = Kirby::instance()->url('media');
+
+        if (Str::startsWith($media, $index) === true) {
+            $media = Str::after($media, $index);
+        } else {
+            // media URL is outside of the site, we can't make routing work;
+            // fall back to the standard media route
+            $media = 'media';
+        }
+
+        $media = ltrim($media, '/');
+
+        if ($uri !== null) {
+            $media = $media . '/' . trim($uri, '/');
+        }
+
+        return $media;
     }
 
     /**
@@ -222,7 +341,7 @@ class InstagramFeed
                 return $asset;
             }
         } catch (Exception $e) {
-            if (Kirby::instance()->option('owebstudio.instagram-feed.debug') === true) {
+            if (static::options()['debug'] === true) {
                 throw $e;
             }
         }
@@ -231,71 +350,49 @@ class InstagramFeed
     }
 
     /**
-     * Default values for every requested API field
-     *
-     * The API omits fields it has no value for, e.g. `caption` for media
-     * without a caption or `media_url` for media that has been flagged for
-     * a copyright violation.
+     * Stores the media files of the feed
      */
-    public const FIELDS = [
-        'id' => null,
-        'caption' => null,
-        'media_type' => null,
-        'media_url' => null,
-        'permalink' => null,
-        'thumbnail_url' => null,
-        'timestamp' => null,
-        'username' => null
-    ];
-
-    public static function feedToCollection(array $data = [], bool $cache = false, ?array $parent = null): Collection
+    public static function storeFeed(array $feed): void
     {
-        $kirby = Kirby::instance();
-        $options = $kirby->option('owebstudio.instagram-feed');
+        foreach ($feed as $item) {
+            foreach ([$item, ...$item['children'] ?? []] as $media) {
+                foreach (['media_url', 'thumbnail_url'] as $field) {
+                    static::storeMediaUrl($media[$field] ?? null);
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the stored file for a media URL if it exists
+     */
+    public static function storedMedia(?string $url = null): ?Asset
+    {
+        $asset = static::mediaFile($url);
+
+        return $asset?->exists() === true ? $asset : null;
+    }
+
+    public static function feedToCollection(array $data = [], ?array $parent = null): Collection
+    {
+        $store = static::options()['store'] === true;
         $collection = new Collection();
 
         foreach ($data as $index => $item) {
             $item = array_merge(static::FIELDS, $item);
 
-            $item['media'] = null;
-            $item['thumbnail'] = null;
             $item['is_album'] = $item['media_type'] === 'CAROUSEL_ALBUM';
             $item['is_image'] = $item['media_type'] === 'IMAGE';
             $item['is_video'] = $item['media_type'] === 'VIDEO';
-            $item['children'] = null;
+            $item['media'] = $store === true ? static::storedMedia($item['media_url']) : null;
+            $item['thumbnail'] = $store === true ? static::storedMedia($item['thumbnail_url']) : null;
 
             // fix album permalink
             if ($parent !== null) {
                 $item['permalink'] = $parent['permalink'] . '?img_index=' . ($index + 1);
             }
 
-            if ($item['is_album'] === true && empty($item['id']) === false) {
-                if ($options['cache'] === true) {
-                    $pluginCache = $kirby->cache('owebstudio.instagram-feed');
-
-                    // feed
-                    $feedCacheData = $pluginCache->get('feed.' . $item['id']);
-
-                    if ($feedCacheData !== null) {
-                        $children = json_decode($feedCacheData, true) ?? [];
-                    } else {
-                        $children = InstagramFeed::fetchMediaChildren($item['id']);
-                        $pluginCache->set('feed.' . $item['id'], json_encode($children), $options['expire']);
-                    }
-                } else {
-                    $children = InstagramFeed::fetchMediaChildren($item['id']);
-                }
-
-                $item['children'] = InstagramFeed::feedToCollection($children, $cache, $item);
-            } else if ($kirby->option('owebstudio.instagram-feed.store', false) === true) {
-                if ($media = InstagramFeed::storeMediaUrl($item['media_url'])) {
-                    $item['media'] = $media;
-                }
-
-                if ($thumbnail = InstagramFeed::storeMediaUrl($item['thumbnail_url'])) {
-                    $item['thumbnail'] = $thumbnail;
-                }
-            }
+            $item['children'] = $item['is_album'] === true ? static::feedToCollection($item['children'] ?? [], $item) : null;
 
             $collection->append(new Collection($item));
         }
