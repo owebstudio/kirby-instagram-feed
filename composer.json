@@ -14,15 +14,15 @@
     "instagram",
     "instagram-feed"
   ],
-  "homepage": "https://owebstudio.com",
+  "homepage": "https://github.com/owebstudio/kirby-instagram-feed",
   "support": {
-    "email": "support@owebstudio.com"
+    "issues": "https://github.com/owebstudio/kirby-instagram-feed/issues",
+    "source": "https://github.com/owebstudio/kirby-instagram-feed"
   },
   "authors": [
     {
       "name": "oweb studio",
-      "email": "contact@owebstudio.com",
-      "homepage": "https://owebstudio.com"
+      "homepage": "https://github.com/owebstudio"
     }
   ],
   "require": {
@@ -30,7 +30,7 @@
     "getkirby/composer-installer": "^1.2"
   },
   "require-dev": {
-    "owebstudio/kirby-license": "^1.0"
+    "owebstudio/kirby-license": "^1.0.1"
   },
   "conflict": {
     "getkirby/cms": "<5.0"
@@ -43,7 +43,7 @@
   "extra": {
     "installer-name": "kirby-instagram-feed",
     "kirby": {
-      "compatible": "^5.0"
+      "compatible": "^5.0 || ^6.0"
     }
   },
   "prefer-stable": true
