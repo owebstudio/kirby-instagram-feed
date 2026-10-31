@@ -17,6 +17,7 @@ $license = new License(
 );
 
 Kirby::plugin('owebstudio/instagram-feed', $license->extend([
+    'commands' => include __DIR__ . '/config/commands.php',
     'options' => include __DIR__ . '/config/options.php',
     'siteMethods' => include __DIR__ . '/config/siteMethods.php',
     'snippets' => include __DIR__ . '/config/snippets.php'
