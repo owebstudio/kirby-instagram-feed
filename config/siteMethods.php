@@ -14,20 +14,11 @@ return [
                 throw new Exception('Instagram API access token required!');
             }
 
+            InstagramFeed::refreshToken();
+
             // check check
             if ($options['cache'] === true) {
                 $pluginCache = $kirby->cache('owebstudio.instagram-feed');
-
-                // refresh token
-                $tokenCacheData = $pluginCache->get('token');
-
-                if ($tokenCacheData === null) {
-                    $expireToken = InstagramFeed::refreshToken();
-
-                    if ($expireToken !== null) {
-                        $pluginCache->set('token', date('Y-m-d H:i:s'), $expireToken);
-                    }
-                }
 
                 // feed
                 $feedCacheData = $pluginCache->get('feed');
@@ -45,7 +36,6 @@ return [
                     $kirby->response()->expires($expires);
                 }
             } else {
-                InstagramFeed::refreshToken();
                 $feed = InstagramFeed::fetchFeed();
             }
         } catch (Exception $e) {

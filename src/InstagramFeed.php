@@ -4,6 +4,7 @@ namespace Oweb;
 
 use Exception;
 use Kirby\Cms\App as Kirby;
+use Kirby\Data\Data;
 use Kirby\Http\Remote;
 use Kirby\Filesystem\Asset;
 use Kirby\Filesystem\F;
@@ -22,6 +23,11 @@ class InstagramFeed
      * File extensions of media files that can be stored
      */
     public const EXTENSIONS = ['gif', 'jpeg', 'jpg', 'mov', 'mp4', 'png', 'webp'];
+
+    /**
+     * Minutes until a failed request to the Instagram API is tried again
+     */
+    public const RETRY = 60;
 
     public static function mediaAsset(?string $uri = null): Asset
     {
@@ -55,7 +61,7 @@ class InstagramFeed
         $options = Kirby::instance()->option('owebstudio.instagram-feed');
 
         $fields = 'id,caption,media_type,media_url,permalink,thumbnail_url,timestamp,username';
-        $url = 'https://graph.instagram.com/me/media?fields=' . $fields . '&limit=' . $options['limit'] . '&access_token=' . $options['accessToken'];
+        $url = 'https://graph.instagram.com/me/media?fields=' . $fields . '&limit=' . $options['limit'] . '&access_token=' . static::token();
         $response = Remote::get($url)->json();
 
         if (empty($response) || empty($response['error']) === false) {
@@ -72,7 +78,7 @@ class InstagramFeed
         $options = Kirby::instance()->option('owebstudio.instagram-feed');
 
         $fields = 'id,media_type,media_url,permalink,thumbnail_url,timestamp,username';
-        $url = 'https://graph.instagram.com/' . $id . '/children?fields=' . $fields . '&access_token=' . $options['accessToken'];
+        $url = 'https://graph.instagram.com/' . $id . '/children?fields=' . $fields . '&access_token=' . static::token();
         $response = Remote::get($url)->json();
 
         if (empty($response) || empty($response['error']) === false) {
@@ -84,16 +90,66 @@ class InstagramFeed
         return $response['data'] ?? [];
     }
 
-    public static function refreshToken(): ?int
+    /**
+     * Returns the access token, the renewed one if there is one
+     */
+    public static function token(): ?string
+    {
+        return static::tokenData()['token'] ?? Kirby::instance()->option('owebstudio.instagram-feed.accessToken');
+    }
+
+    /**
+     * File that keeps the renewed access token
+     */
+    public static function tokenFile(): string
+    {
+        return Kirby::instance()->root('config') . '/.instagram-feed-token';
+    }
+
+    /**
+     * Returns the stored data of the renewed access token,
+     * as long as the token in the config has not changed
+     */
+    public static function tokenData(): array
+    {
+        $data = Data::read(static::tokenFile(), 'json', fail: false);
+
+        if (($data['source'] ?? null) !== static::tokenHash()) {
+            return [];
+        }
+
+        return $data;
+    }
+
+    protected static function tokenHash(): string
+    {
+        return hash('sha256', (string)Kirby::instance()->option('owebstudio.instagram-feed.accessToken'));
+    }
+
+    /**
+     * Renews the access token one week before it expires
+     */
+    public static function refreshToken(): void
     {
         // live sites need a license key to renew the token
         if (License::for('owebstudio/instagram-feed')?->isLocked() === true) {
-            return null;
+            return;
         }
 
         $options = Kirby::instance()->option('owebstudio.instagram-feed');
+        $data = static::tokenData();
+        $now = time();
 
-        $url = 'https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=' . $options['accessToken'];
+        if (($data['expires'] ?? 0) - (86400 * 7) > $now) {
+            return;
+        }
+
+        // the last attempt failed, e.g. because the token is not 24 hours old yet
+        if (($data['failed'] ?? 0) + (static::RETRY * 60) > $now) {
+            return;
+        }
+
+        $url = 'https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=' . static::token();
         $response = Remote::get($url)->json();
 
         if (empty($response) || empty($response['error']) === false) {
@@ -102,13 +158,25 @@ class InstagramFeed
             }
         }
 
-        // renew token expire 1 week before
-        if (empty($response['expires_in']) === false) {
-            // return as minutes for cache
-            return (int)round(((int)$response['expires_in'] - (86400 * 7)) / 60);
+        if (empty($response['access_token']) === false && empty($response['expires_in']) === false) {
+            $data = [
+                'token' => $response['access_token'],
+                'expires' => $now + (int)$response['expires_in'],
+                'refreshed' => $now
+            ];
+        } else {
+            $data['failed'] = $now;
         }
 
-        return null;
+        $data['source'] = static::tokenHash();
+
+        try {
+            Data::write(static::tokenFile(), $data, 'json');
+        } catch (Exception $e) {
+            if ($options['debug'] === true) {
+                throw $e;
+            }
+        }
     }
 
     /**
@@ -204,17 +272,6 @@ class InstagramFeed
             if ($item['is_album'] === true && empty($item['id']) === false) {
                 if ($options['cache'] === true) {
                     $pluginCache = $kirby->cache('owebstudio.instagram-feed');
-
-                    // refresh token
-                    $tokenCacheData = $pluginCache->get('token');
-
-                    if ($tokenCacheData === null) {
-                        $expireToken = InstagramFeed::refreshToken();
-
-                        if ($expireToken !== null) {
-                            $pluginCache->set('token', date('Y-m-d H:i:s'), $expireToken);
-                        }
-                    }
 
                     // feed
                     $feedCacheData = $pluginCache->get('feed.' . $item['id']);
