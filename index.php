@@ -13,7 +13,7 @@ $license = new License(
     plugin: 'owebstudio/instagram-feed',
     products: [15537],
     name: 'Instagram Feed',
-    url: 'https://owebstudio.com/kirby/plugins/instagram-feed'
+    url: 'https://owebstudio.lemonsqueezy.com/checkout/buy/29afd8d3-78d4-4cd5-a19b-a13c3d3b5e1b'
 );
 
 Kirby::plugin('owebstudio/instagram-feed', $license->extend([
