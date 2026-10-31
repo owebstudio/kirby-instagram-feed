@@ -6,6 +6,7 @@ use Exception;
 use Kirby\Cms\App as Kirby;
 use Kirby\Data\Data;
 use Kirby\Filesystem\Asset;
+use Kirby\Filesystem\Dir;
 use Kirby\Filesystem\F;
 use Kirby\Http\Remote;
 use Kirby\Toolkit\Collection;
@@ -72,6 +73,9 @@ class InstagramFeed
                 if (is_array($feed) === false) {
                     static::refresh();
                     $feed = $pluginCache->get('feed', []);
+                } else if ($options['store'] === true && is_dir(static::mediaRoot()) === false) {
+                    // the media folder has been cleared since the last fetch
+                    static::storeFeed($feed);
                 }
 
                 // cached pages with the feed expire together with the feed
@@ -299,6 +303,14 @@ class InstagramFeed
     }
 
     /**
+     * Folder of the stored media files
+     */
+    public static function mediaRoot(): string
+    {
+        return Kirby::instance()->root('index') . '/' . static::mediaPrefix(static::MEDIA);
+    }
+
+    /**
      * Returns the stored file for a media URL of the API
      * (the file might not exist yet)
      */
@@ -350,15 +362,30 @@ class InstagramFeed
     }
 
     /**
-     * Stores the media files of the feed
+     * Stores the media files of the feed and
+     * removes the files that are no longer in it
      */
     public static function storeFeed(array $feed): void
     {
+        $keep = [];
+
         foreach ($feed as $item) {
             foreach ([$item, ...$item['children'] ?? []] as $media) {
                 foreach (['media_url', 'thumbnail_url'] as $field) {
-                    static::storeMediaUrl($media[$field] ?? null);
+                    if ($asset = static::storeMediaUrl($media[$field] ?? null)) {
+                        $keep[] = $asset->filename();
+                    }
                 }
+            }
+        }
+
+        $root = static::mediaRoot();
+
+        Dir::make($root);
+
+        foreach (Dir::files($root) as $filename) {
+            if (in_array($filename, $keep, true) === false) {
+                F::remove($root . '/' . $filename);
             }
         }
     }

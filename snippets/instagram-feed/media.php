@@ -4,8 +4,15 @@
  * @var \Kirby\Toolkit\Collection $media An image or video of the post
  * @var \Kirby\Toolkit\Collection $post The post (the album for album media)
  */
-$src = $media->media_url();
-$poster = $media->thumbnail_url();
+
+// stored media files are served from the own server only
+if (option('owebstudio.instagram-feed.store') === true) {
+    $src = $media->media()?->url();
+    $poster = $media->thumbnail()?->url();
+} else {
+    $src = $media->media_url();
+    $poster = $media->thumbnail_url();
+}
 ?>
 <?php if ($media->is_image() === true && empty($src) === false): ?>
     <a href="<?= esc($media->permalink() ?? '') ?>" target="_blank" rel="noopener">
