@@ -1,27 +1,22 @@
-<?php foreach (site()->instagramFeed() as $feed): ?>
-    <?php if ($feed->is_image() === true && $src = $feed->media_url()): ?>
-        <a href="<?= esc($feed->permalink() ?? '') ?>" target="_blank">
-            <img title="<?= esc($feed->caption() ?? '') ?>" src="<?= esc($src) ?>">
-        </a>
-    <?php elseif ($feed->is_video() === true && $src = $feed->media_url()): ?>
-        <a href="<?= esc($feed->permalink() ?? '') ?>" target="_blank">
-            <video width="100%" height="100%" autoplay preload muted loop poster="<?= esc($feed->thumbnail_url() ?? '') ?>">
-                <source src="<?= esc($src) ?>" type="video/mp4">
-            </video>
-        </a>
-    <?php elseif ($feed->is_album() === true && $children = $feed->children()): ?>
-        <?php foreach ($children as $child): ?>
-            <?php if ($child->is_image() === true && $src = $child->media_url()): ?>
-                <a href="<?= esc($child->permalink() ?? '') ?>" target="_blank">
-                    <img title="<?= esc($child->caption() ?? '') ?>" src="<?= esc($src) ?>">
-                </a>
-            <?php elseif ($child->is_video() === true && $src = $child->media_url()): ?>
-                <a href="<?= esc($child->permalink() ?? '') ?>" target="_blank">
-                    <video width="100%" height="100%" autoplay preload muted loop poster="<?= esc($child->thumbnail_url() ?? '') ?>">
-                        <source src="<?= esc($src) ?>" type="video/mp4">
-                    </video>
-                </a>
-            <?php endif ?>
-        <?php endforeach ?>
-    <?php endif ?>
+<?php
+
+/**
+ * @var int|null $limit Maximum number of posts
+ * @var array|null $types Types of posts to show: `image`, `video` and `album`
+ */
+$types ??= ['image', 'video', 'album'];
+$posts = site()->instagramFeed()->filter(fn ($post) =>
+    ($post->is_image() === true && in_array('image', $types, true) === true) ||
+    ($post->is_video() === true && in_array('video', $types, true) === true) ||
+    ($post->is_album() === true && in_array('album', $types, true) === true)
+);
+
+if (empty($limit) === false) {
+    $posts = $posts->limit((int)$limit);
+}
+?>
+<?php foreach ($posts as $post): ?>
+    <?php foreach ($post->is_album() === true ? $post->children() ?? [] : [$post] as $media): ?>
+        <?php snippet('instagram-feed/media', ['media' => $media, 'post' => $post]) ?>
+    <?php endforeach ?>
 <?php endforeach ?>
