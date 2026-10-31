@@ -6,7 +6,6 @@ use Exception;
 use Kirby\Cms\App as Kirby;
 use Kirby\Http\Remote;
 use Kirby\Filesystem\Asset;
-use Kirby\Filesystem\Dir;
 use Kirby\Filesystem\F;
 use Kirby\Toolkit\Collection;
 use Kirby\Toolkit\Str;
@@ -14,6 +13,15 @@ use Oweb\InstagramFeed\License\License;
 
 class InstagramFeed
 {
+    /**
+     * Folder for stored media files inside the media folder
+     */
+    public const MEDIA = 'instagram-feed';
+
+    /**
+     * File extensions of media files that can be stored
+     */
+    public const EXTENSIONS = ['gif', 'jpeg', 'jpg', 'mov', 'mp4', 'png', 'webp'];
 
     public static function mediaAsset(?string $uri = null): Asset
     {
@@ -103,37 +111,52 @@ class InstagramFeed
         return null;
     }
 
-    public static function storeMediaUrl(?string $url = null, bool $overwrite = false): ?Asset
+    /**
+     * Returns the stored file for a media URL of the API
+     * (the file might not exist yet)
+     */
+    public static function mediaFile(?string $url = null): ?Asset
     {
-        if (empty($url) === true) {
-            return null;
-        }
-
-        $path = parse_url($url, PHP_URL_PATH);
+        $path = empty($url) === false ? parse_url($url, PHP_URL_PATH) : null;
 
         if (empty($path) === true) {
             return null;
         }
 
-        $kirby = Kirby::instance();
+        $filename = F::safeName(basename($path));
 
-        $filename = basename($path);
-        $directory = 'plugins/owebstudio/instagram-feed';
-        $relativeFilepath = $directory . '/' . $filename;
-
-        $mediaPath = $kirby->root('media') . '/' . $directory;
-        $filePath = $mediaPath . '/' . $filename;
-
-        Dir::make($mediaPath);
-
-        if ($overwrite === false && F::exists($filePath) === true) {
-            return InstagramFeed::mediaAsset($relativeFilepath);
+        if (in_array(F::extension($filename), static::EXTENSIONS, true) === false) {
+            return null;
         }
 
-        if ($remoteMedia = F::read($url)) {
-            F::write($filePath, $remoteMedia);
+        return static::mediaAsset(static::MEDIA . '/' . $filename);
+    }
 
-            return InstagramFeed::mediaAsset($relativeFilepath);
+    /**
+     * Downloads a media file unless it has been stored before
+     */
+    public static function storeMediaUrl(?string $url = null): ?Asset
+    {
+        if (!$asset = static::mediaFile($url)) {
+            return null;
+        }
+
+        if ($asset->exists() === true) {
+            return $asset;
+        }
+
+        try {
+            $response = Remote::get($url, ['timeout' => 60]);
+
+            if ($response->code() === 200 && $response->content() !== '') {
+                F::write($asset->root(), $response->content());
+
+                return $asset;
+            }
+        } catch (Exception $e) {
+            if (Kirby::instance()->option('owebstudio.instagram-feed.debug') === true) {
+                throw $e;
+            }
         }
 
         return null;
@@ -208,11 +231,11 @@ class InstagramFeed
 
                 $item['children'] = InstagramFeed::feedToCollection($children, $cache, $item);
             } else if ($kirby->option('owebstudio.instagram-feed.store', false) === true) {
-                if ($media = InstagramFeed::storeMediaUrl($item['media_url'], !$cache)) {
+                if ($media = InstagramFeed::storeMediaUrl($item['media_url'])) {
                     $item['media'] = $media;
                 }
 
-                if ($thumbnail = InstagramFeed::storeMediaUrl($item['thumbnail_url'], !$cache)) {
+                if ($thumbnail = InstagramFeed::storeMediaUrl($item['thumbnail_url'])) {
                     $item['thumbnail'] = $thumbnail;
                 }
             }
