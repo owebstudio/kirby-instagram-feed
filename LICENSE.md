@@ -64,7 +64,7 @@ THE PRODUCTS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPL
 
 ## 8. Contact
 
-If anything in this license is unclear, please contact us at support@owebstudio.com.
+If anything in this license is unclear, please contact us at contact@owebstudio.com.
 
 Ahmet Bora (oweb studio)
 Unalan Cd. Libadiye Sk. No: 82/E Emaar Square Heights D:313
