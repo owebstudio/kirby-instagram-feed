@@ -19,13 +19,15 @@ Products or versions of a Product that were published under the MIT license stay
 
 With a License (Regular License) you can:
 
-- use the Product in up to 5 (five) End Products, for yourself or for clients;
+- use the Product in up to 3 (three) End Products, for yourself or for clients;
 - customize the Product for these End Products;
 - use the Product for lifetime;
 - get updates of the Product for lifetime;
 - share the Product with teammates and contractors who work on the same End Product;
 - hand over an End Product you built for a client, so the client can keep using the Product in that End Product;
 - get support for the first year after your purchase. After that, support can be extended for a fee.
+
+Licenses bought before 3 November 2026 can still be used in up to 5 (five) End Products. Contact us if you need more activations for them.
 
 Development Use is allowed without a License Key, for example to try a Product before you buy it or while you build an End Product.
 
