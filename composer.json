@@ -2,6 +2,7 @@
   "name": "owebstudio/kirby-instagram-feed",
   "description": "Instagram feed on your website for Kirby.",
   "type": "kirby-plugin",
+  "version": "1.6.0",
   "license": "proprietary",
   "keywords": [
     "owebstudio",
